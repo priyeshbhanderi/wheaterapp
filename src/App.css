@@ -1,0 +1,10 @@
+.weatherr{
+  background-image: url(../src/assets/images/bg.jpg);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  height: 100vh;
+}
+.weatherr .row{
+  width: 70%;
+}
