@@ -5,6 +5,29 @@
   background-repeat: no-repeat;
   height: 100vh;
 }
-.weatherr .row{
+.weatherr .w-70{
   width: 70%;
+}
+.weatherr .bggg{
+  background: rgba( 255, 255, 255, 0.25 );
+backdrop-filter: blur( 4px );
+-webkit-backdrop-filter: blur( 4px );
+border-radius: 10px;
+border: 1px solid rgba( 255, 255, 255, 0.18 );
+}
+.weatherr .row h1{
+  font-size: 10rem;
+}
+.weatherr .row .card{
+  background: none;
+  border: none;
+}
+.weatherr  .dayys{
+  background:none;
+}
+.weatherr input{
+  font-size: 24px;
+}
+.weatherr input::placeholder{
+  font-size: 24px;
 }
