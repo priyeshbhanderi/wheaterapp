@@ -1,62 +1,85 @@
-import logo from './logo.svg';
-
-import Checck from './Checck.jsx'
-
 import './App.css';
-import '../node_modules/bootstrap-icons/font/bootstrap-icons.min.css'
-import { useState } from 'react';
+import SelectSearch from 'react-select-search';
+import 'react-select-search/style.css';
+
+import '../node_modules/bootstrap-icons/font/bootstrap-icons.min.css';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-
-// Import Swiper React components
-import React from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
-import 'swiper/css/grid';
-import 'swiper/css/pagination';
-import { Grid, Pagination, EffectCreative } from 'swiper/modules';
-import 'swiper/css/effect-creative';
-
-import S2 from './S2.jsx'
-import S3 from './S3.jsx'
-import Modal from './Modal.jsx'
-import Googleauth from './Googleauth.jsx'
-import ImageGallery from './ImageGallery.jsx';
 
 const api = {
   key: '34480b98aa332da53123a0ac63a4ea9d',
   base: "https://api.openweathermap.org/data/2.5/",
 };
 
-function App() {
+
+
+const App = () => {
   const [search, setSearch] = useState("");
   const [weather, setWeather] = useState({});
   const [forecast, setForecast] = useState([]);
 
-  const searchPressed = () => {
-    axios.get(`${api.base}weather?q=${search}&units=metric&APPID=${api.key}`)
+  const [cities, setCities] = useState([]);
+  const [selectedCity, setSelectedCity] = useState("Surat");
+
+
+
+  const city_api = 'https://countriesnow.space/api/v0.1/countries/population/cities';
+
+  useEffect(() => {
+    axios.get(`${city_api}`)
       .then((response) => {
-        setWeather(response.data);
-        console.log(response.data);
-        return axios.get(`${api.base}forecast/daily?q=${search}&cnt=7&units=metric&APPID=${api.key}`);
-      })
-      .then((response) => {
-        setForecast(response.data.list);
-        console.log(response.data.list);
+        const cityData = response.data.data.map(city => ({
+          value: city.city,
+          name: city.city,
+        }));
+        setCities(cityData);
+        // console.log(cityData);
+
+        // Set default city if it exists in the city list
+        const defaultCity = cityData.find(city => city.value === "Surat");
+        if (defaultCity) {
+          setSelectedCity(defaultCity.value);
+        }
       })
       .catch((error) => {
-        console.error("Error fetching the weather data", error);
+        console.error('Error fetching city data:', error);
       });
-  };
+  }, []);
 
+  useEffect(() => {
+    if (selectedCity) {
+      axios.get(`${api.base}weather?q=${selectedCity}&units=metric&APPID=${api.key}`)
+        .then((response) => {
+          setWeather(response.data);
+          // console.log(response.data);
+          return axios.get(`${api.base}forecast/daily?q=${selectedCity}&cnt=7&units=metric&APPID=${api.key}`);
+        })
+        .then((response) => {
+          setForecast(response.data.list);
+        })
+        .catch((error) => {
+          console.error("Error fetching the weather data", error);
+        });
+    }
+  }, [selectedCity]);
+
+  const handleChange = (selectedOption) => {
+    setSelectedCity(selectedOption);
+    console.log('Selected city:', selectedOption);
+  };
 
   return (
     <>
       <div className='weatherr'>
         <div className='container-fluid d-flex flex-column justify-content-center align-items-center h-100'>
-          <div className="d-flex w-70">
-            <input className="form-control me-2" type="search" placeholder="Search" onChange={(e) => setSearch(e.target.value)} aria-label="Search" />
-            <button className="btn btn-outline-dark fw-bold fs-4" onClick={searchPressed} type='submit'>Search</button>
-          </div>
+          <SelectSearch
+            id="city-select"
+            options={cities}
+            value={selectedCity}
+            onChange={handleChange}
+            search
+            placeholder="Choose a city"
+          />
           {typeof weather.main !== "undefined" ? (
             <div className='row p-3 w-70'>
               <div className='col-md-4 bggg'>
@@ -88,8 +111,8 @@ function App() {
                 <h2 className='my-3 text-end fs-1 fw-bold bggg p-2'>7-Day Forecast</h2>
                 <div className='d-flex justify-content-around row row-cols-3 g-4 w-100 mt-5'>
                   {forecast.map((day, index) => (
-                    <div className='col'>
-                      <div key={index} className='d-flex flex-column align-items-center bggg'>
+                    <div key={index} className='col'>
+                      <div className='d-flex flex-column align-items-center bggg'>
                         <span className='fw-bold fs-4'>{new Date(day.dt * 1000).toLocaleDateString("en-US", { weekday: 'long' })}</span>
                         <span className='fs-4'>{Math.round(day.temp.day)}°C</span>
                         <span className='text-capitalize fs-5'>{day.weather[0].description}</span>
@@ -98,22 +121,12 @@ function App() {
                   ))}
                 </div>
               </div>
-
             </div>
           ) : (
-            <h1 class="text-5xl font-bold text-white">
-              Enter a city name to get the weather information
-            </h1>
+            <p className='text-white fs-3'>Enter a city name to get the weather information</p>
           )}
         </div>
-
       </div>
-      <S2 />
-      <S3 />
-      <Checck />
-      <Modal />
-      <Googleauth/>
-      <ImageGallery/>
     </>
   );
 }
